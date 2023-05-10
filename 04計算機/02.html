@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>美化計算機</title>
+    <style>
+        body {
+            background-image: url('./02.jpeg');
+            background-size: cover;
+        }
+
+        .box {
+            width: 100%;
+            height: 700px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: auto;
+            text-align: right;
+            ;
+        }
+
+        td {
+            width: 10px;
+            height: 10px;
+            text-align: center;
+            vertical-align: middle;
+            padding: 10px;
+            color: green;
+        }
+
+
+        td.ellipsis {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            word-spacing: nowrap;
+        }
+
+        #text {
+            text-align: right;
+
+        }
+
+        .left-history {
+            width: 300px;
+            height: 400px;
+            background: darkcyan;
+            /* overflow-y: scroll; */
+            overflow: hidden;
+            overflow-y: scroll;
+        }
+
+        /* 
+        .history {
+            width: 300px;
+            height: 400px;
+
+        } */
+
+        .math {
+            width: 300px;
+            height: 500px;
+            margin: 10px;
+            background: rgba(207, 207, 207, 0.876);
+
+        }
+
+        .right {
+            width: 300px;
+            height: 400px;
+        }
+
+        textarea {
+            width: 300px;
+            height: 400px;
+            background: darkorange;
+        }
+
+        form {
+            text-align: center;
+        }
+
+        .list {
+            text-align: right;
+        }
+
+        .list li {
+
+            text-align: right;
+            background-color: aqua;
+
+        }
+
+        .btn-del {
+
+
+            text-align: right;
+            background-color: rgb(155, 155, 155);
+
+        }
+
+        .b {
+            background-color: rgb(0, 0, 0);
+            margin: 10px;
+            list-style: none;
+            color: white;
+
+        }
+    </style>
+</head>
+
+<body>
+    <input type="text" disabled style="display: none;">
+
+
+    <div class="box">
+        <div class="left-history">
+
+            <!-- <div class="history"> -->
+            <ul id="list">
+
+            </ul>
+            <!-- </div> -->
+            <!-- <input type="reset" value="清除"> -->
+
+        </div>
+
+
+        <div class="math-table">
+            <table tabindex="1" class="math" border="1" style="table-layout: fixed;">
+                <tr>
+                    <td colspan="4" id="text" class="ellipsis" contenteditable="true"></td>
+
+                </tr>
+                <tr>
+                    <td>C</td>
+                    <td>/</td>
+                    <td>*</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>7</td>
+                    <td>8</td>
+                    <td>9</td>
+                    <td rowspan="2">+</td>
+                </tr>
+                <tr>
+                    <td>4</td>
+                    <td>5</td>
+                    <td>6</td>
+                </tr>
+                <tr>
+                    <td>1</td>
+                    <td>2</td>
+                    <td>3</td>
+
+                    <td rowspan="2">=</td>
+                </tr>
+                <tr>
+                    <td colspan="2">0</td>
+                    <td>.</td>
+                </tr>
+            </table>
+        </div>
+        <div class="right">
+            <form>
+                <textarea cols="30" rows="10" tabindex="2"></textarea>
+                <br>
+                <input type="reset" value="清除">
+            </form>
+        </div>
+    </div>
+    </table>
+
+
+
+    <script src="./jquery-3.6.4.js"></script>
+    <script>
+        const text = document.getElementById('text')
+        const btns = document.querySelectorAll('td:not(#text)')
+        const list = document.querySelector('#list')
+
+        const btnDel = document.querySelectorAll('.btn-del')
+
+        for (const btn of btns) {
+            btn.addEventListener('click', () => {
+                const btnText = btn.innerText
+                const operators = ['+', '-', '*', '/']
+                const lastText = text.innerText[text.innerText.length - 1]
+                // 如果按的鍵是 =
+                if (btnText === '=') {
+                    // 如果最後一個字不是運算子，才計算
+                    if (!operators.includes(lastText)) {
+                        text.innerText = eval(text.innerText)
+                        // list.insertAdjacentHTML('afterend', `<li>${text.innerText}<input type="button" value="x" class="btn-del"></li> `)
+
+                        // list.innerHTML += `<li>${text.innerText}<input type="button" value="x" class="btn-del"></li>`
+
+                        list.insertAdjacentHTML('afterbegin', `<li class=b>${text.innerText}<input type="button" value="x" class="btn-del"></li>`)
+                    }
+                }
+                // 如果按 C，歸 0
+                else if (btnText === 'C') {
+                    text.innerText = '0'
+                }
+                // 如果現在是 0，按的是數字，把文字取代
+                else if (text.innerText === '0' && !isNaN(parseInt(btnText))) {
+                    text.innerText = btnText
+                }
+                // 如果最後一個字是運算子
+                else if (operators.includes(lastText)) {
+                    // 現在按的不是運算子，才加上去
+                    if (!operators.includes(btnText)) {
+                        text.innerText += btnText
+                    }
+                }
+                // 如果按的是 .
+                else if (btnText === '.') {
+                    let canAddDot = true
+                    // 從最後一個字往前跑迴圈
+                    for (let i = text.innerText.length - 1; i >= 0; i--) {
+                        // 如果先遇到運算子，一定可以加 .
+                        if (operators.includes(text.innerText[i])) break
+                        // 如果先遇到 .，一定不能加 .
+                        if (text.innerText[i] === '.') {
+                            canAddDot = false
+                            break
+                        }
+                    }
+                    // 迴圈完可以加才
+                    if (canAddDot) text.innerText += '.'
+                }
+                // 如果最後一個字不是運算子，加上去
+                else {
+                    text.innerText += btnText
+                }
+            })
+        }
+
+        document.addEventListener('keydown', event => {
+            const btnText = event.key
+            const operators = ['+', '-', '*', '/']
+            const lastText = text.innerText[text.innerText.length - 1]
+            // 如果按的鍵是 =
+            if (btnText === '=' || btnText === 'Enter') {
+                // 如果最後一個字不是運算子，才計算
+                if (!operators.includes(lastText)) {
+                    text.innerText = eval(text.innerText)
+                    // list.insertAdjacentHTML('afterend', `<li>${text.innerText}<input type="button" value="x" class="btn-del"></li> `)
+                    list.insertAdjacentHTML('afterbegin'
+                        , `<li class=b>${text.innerText}<input type="button" value="x" class="btn-del"></li>`
+                    )
+                }
+            }
+            // 如果按 C，歸 0
+            else if (btnText === 'c') {
+                text.innerText = '0'
+            }
+            // 如果現在是 0，按的是數字，把文字取代
+            else if (text.innerText === '0' && !isNaN(parseInt(btnText))) {
+                text.innerText = btnText
+            }
+
+            // 如果最後一個字是運算子
+            else if (operators.includes(lastText)) {
+                // 現在按的不是運算子，且是數字才加上去
+                if (!operators.includes(btnText) && !isNaN(parseInt(btnText))) {
+                    text.innerText += btnText
+                }
+            }
+            // 如果最後一個字不是運算子，且按的是數字或運算子，加上去
+            else if (!isNaN(parseInt(btnText)) || operators.includes(btnText)) {
+                text.innerText += btnText
+            }
+            // 如果按的是 .
+            else if (btnText === '.') {
+                let canAddDot = true
+                // 從最後一個字往前跑迴圈
+                for (let i = text.innerText.length - 1; i >= 0; i--) {
+                    // 如果先遇到運算子，一定可以加 .
+                    if (operators.includes(text.innerText[i])) break
+                    // 如果先遇到 .，一定不能加 .
+                    if (text.innerText[i] === '.') {
+                        canAddDot = false
+                        break
+                    }
+                }
+                // 迴圈完可以加才
+                if (canAddDot) text.innerText += '.'
+            }
+        })
+
+        // $("=").event.key(function (event) {
+        //     event.preventDefault()
+        //     const inptText = $('#inpt-text')
+        //     if (inptText.val().length === 0) return
+        //     //NaN空值
+        //     // inpt-text改籌計算節出現結果的那一格
+        //     $('$li').append(`
+        //     <li>
+        //         ${$('#inptText').val()}
+        //         <input type="button" value="x" class="btn-del">
+        //     </li>`)
+
+
+        // })
+
+
+
+        // btnDel.forEach((btnd, index) => {
+        //     console.log(btnd, index)
+        //     btnd.addEventListener('click', () => {
+        //         let ula = list.firstElementChild
+        //         for (let i = 0; i < index; i++) {
+        //             ula = previousElementSibling.classList.remove('btn-del')
+        //         }
+        //         // list2li3.parentElement=
+        //     })
+        // })
+
+
+
+        /*左邊歷史 li部分*/
+        /*中間按鍵+固定寬度*/
+        /*大致Ok*/
+        $('#list').on('click', '.btn-del', function () {
+            $(this).parent().remove()
+        })
+
+
+
+
+
+    </script>
+</body>
+
+</html>
